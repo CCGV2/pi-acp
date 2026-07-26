@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import type { AuthenticateRequest } from "@agentclientprotocol/sdk";
-import { assertMcpServersSupported, PiAcpAgent } from "@pi-acp/acp/agent";
+import {
+	assertMcpServersSupported,
+	assertResumeMcpCompatible,
+	PiAcpAgent,
+} from "@pi-acp/acp/agent";
 import { asAgentConn, FakeAgentSideConnection } from "../helpers/fakes";
 
 function createAgent() {
@@ -161,6 +165,16 @@ describe("protocol surface: resumeSession", () => {
 	test("rejects non-absolute cwd", () => {
 		const { agent } = createAgent();
 		expect(agent.resumeSession({ sessionId: "test", cwd: "relative/path" })).rejects.toThrow();
+	});
+
+	test("requires explicitly supplied MCP config to match a live session", () => {
+		expect(() => assertResumeMcpCompatible("same", "same")).not.toThrow();
+		try {
+			assertResumeMcpCompatible("old", "new");
+			throw new Error("expected mismatch");
+		} catch (error) {
+			expect(error).toMatchObject({ code: -32602 });
+		}
 	});
 });
 

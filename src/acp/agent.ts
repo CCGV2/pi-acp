@@ -66,6 +66,7 @@ import {
 import { extractUserMessageText } from "@pi-acp/acp/translate/pi-messages";
 import { acpPromptToPiMessage } from "@pi-acp/acp/translate/prompt";
 import { formatToolContent } from "@pi-acp/acp/translate/tool-content";
+import { fingerprintMcpServers } from "@pi-acp/mcp/fingerprint";
 import { normalizeMcpServers } from "@pi-acp/mcp/normalize";
 import { McpSessionManager } from "@pi-acp/mcp/session-manager";
 import { buildMcpTools } from "@pi-acp/mcp/tool-adapter";
@@ -79,6 +80,14 @@ export type PiAcpAgentConfig = {
 	createAgentSession?: CreatePiSession;
 	mcpInitializeTimeoutMs?: number;
 };
+
+export function assertResumeMcpCompatible(existing: string, requested: string): void {
+	if (existing !== requested) {
+		throw RequestError.invalidParams(
+			"MCP configuration does not match the live session; close and load it with the new configuration",
+		);
+	}
+}
 
 export function assertMcpServersSupported(mcpServers: readonly unknown[] | undefined): void {
 	if (mcpServers !== undefined && mcpServers.length > 0) {
@@ -226,22 +235,10 @@ export class PiAcpAgent implements ACPAgent {
 			throw RequestError.invalidParams(`cwd must be an absolute path: ${params.cwd}`);
 		}
 
-		let mcpManager: McpSessionManager | undefined;
-		let customTools: ToolDefinition[];
-		try {
-			const normalized = normalizeMcpServers(params.mcpServers, params.cwd);
-			mcpManager = await McpSessionManager.open(
-				normalized,
-				this.mcpInitializeTimeoutMs === undefined
-					? {}
-					: { connection: { initializeTimeoutMs: this.mcpInitializeTimeoutMs } },
-			);
-			customTools = await buildMcpTools(mcpManager);
-		} catch (e: unknown) {
-			await mcpManager?.close();
-			const msg = e instanceof Error ? e.message : "Invalid MCP server configuration";
-			throw RequestError.invalidParams(msg);
-		}
+		const { manager: mcpManager, tools: customTools } = await this.openMcpRuntime(
+			params.mcpServers,
+			params.cwd,
+		);
 
 		let result: CreateAgentSessionResult;
 		try {
@@ -539,7 +536,6 @@ export class PiAcpAgent implements ACPAgent {
 	}
 
 	async loadSession(params: LoadSessionRequest): Promise<LoadSessionResponse> {
-		assertMcpServersSupported(params.mcpServers);
 		if (!isAbsolute(params.cwd)) {
 			throw RequestError.invalidParams(`cwd must be an absolute path: ${params.cwd}`);
 		}
@@ -550,15 +546,21 @@ export class PiAcpAgent implements ACPAgent {
 		if (sessionFile === null) {
 			throw RequestError.invalidParams(`Unknown sessionId: ${params.sessionId}`);
 		}
+		const { manager: mcpManager, tools: customTools } = await this.openMcpRuntime(
+			params.mcpServers,
+			params.cwd,
+		);
 
 		let result: CreateAgentSessionResult;
 		try {
 			const sm = PiSessionManager.open(sessionFile);
-			result = await createAgentSession({
+			result = await this.createPiSession({
 				cwd: params.cwd,
 				sessionManager: sm,
+				customTools,
 			});
 		} catch (e: unknown) {
+			await mcpManager.close();
 			const authErr = detectAuthError(e);
 			if (authErr !== null) throw authErr;
 			const msg = e instanceof Error ? e.message : String(e);
@@ -572,6 +574,7 @@ export class PiAcpAgent implements ACPAgent {
 			cwd: params.cwd,
 			mcpServers: params.mcpServers,
 			piSession,
+			mcpManager,
 			conn: this.conn,
 			supportsTerminalOutput: this.clientCapabilities.terminalOutput,
 		});
@@ -617,7 +620,6 @@ export class PiAcpAgent implements ACPAgent {
 	}
 
 	async resumeSession(params: ResumeSessionRequest): Promise<ResumeSessionResponse> {
-		assertMcpServersSupported(params.mcpServers);
 		if (!isAbsolute(params.cwd)) {
 			throw RequestError.invalidParams(`cwd must be an absolute path: ${params.cwd}`);
 		}
@@ -625,6 +627,11 @@ export class PiAcpAgent implements ACPAgent {
 		// If the session is already live, reuse it.
 		const existing = this.sessions.maybeGet(params.sessionId);
 		if (existing !== undefined) {
+			if (params.mcpServers !== undefined) {
+				const requested = normalizeMcpServers(params.mcpServers, params.cwd);
+				const requestedFingerprint = fingerprintMcpServers(requested);
+				assertResumeMcpCompatible(existing.mcpFingerprint, requestedFingerprint);
+			}
 			const modes = buildThinkingModes(existing.piSession);
 			const models = buildModelState(existing.piSession);
 			return {
@@ -639,15 +646,22 @@ export class PiAcpAgent implements ACPAgent {
 		if (sessionFile === null) {
 			throw RequestError.invalidParams(`Unknown sessionId: ${params.sessionId}`);
 		}
+		const resumeMcpServers = params.mcpServers ?? [];
+		const { manager: mcpManager, tools: customTools } = await this.openMcpRuntime(
+			resumeMcpServers,
+			params.cwd,
+		);
 
 		let result: CreateAgentSessionResult;
 		try {
 			const sm = PiSessionManager.open(sessionFile);
-			result = await createAgentSession({
+			result = await this.createPiSession({
 				cwd: params.cwd,
 				sessionManager: sm,
+				customTools,
 			});
 		} catch (e: unknown) {
+			await mcpManager.close();
 			const authErr = detectAuthError(e);
 			if (authErr !== null) throw authErr;
 			const msg = e instanceof Error ? e.message : String(e);
@@ -659,8 +673,9 @@ export class PiAcpAgent implements ACPAgent {
 		const session = new PiAcpSession({
 			sessionId: params.sessionId,
 			cwd: params.cwd,
-			mcpServers: params.mcpServers ?? [],
+			mcpServers: resumeMcpServers,
 			piSession,
+			mcpManager,
 			conn: this.conn,
 			supportsTerminalOutput: this.clientCapabilities.terminalOutput,
 		});
@@ -694,7 +709,6 @@ export class PiAcpAgent implements ACPAgent {
 	}
 
 	async unstable_forkSession(params: ForkSessionRequest): Promise<ForkSessionResponse> {
-		assertMcpServersSupported(params.mcpServers);
 		if (!isAbsolute(params.cwd)) {
 			throw RequestError.invalidParams(`cwd must be an absolute path: ${params.cwd}`);
 		}
@@ -703,15 +717,22 @@ export class PiAcpAgent implements ACPAgent {
 		if (sourceFile === null) {
 			throw RequestError.invalidParams(`Unknown sessionId: ${params.sessionId}`);
 		}
+		const forkMcpServers = params.mcpServers ?? [];
+		const { manager: mcpManager, tools: customTools } = await this.openMcpRuntime(
+			forkMcpServers,
+			params.cwd,
+		);
 
 		let result: CreateAgentSessionResult;
 		try {
 			const sm = PiSessionManager.forkFrom(sourceFile, params.cwd);
-			result = await createAgentSession({
+			result = await this.createPiSession({
 				cwd: params.cwd,
 				sessionManager: sm,
+				customTools,
 			});
 		} catch (e: unknown) {
+			await mcpManager.close();
 			const authErr = detectAuthError(e);
 			if (authErr !== null) throw authErr;
 			const msg = e instanceof Error ? e.message : String(e);
@@ -729,8 +750,9 @@ export class PiAcpAgent implements ACPAgent {
 		const session = new PiAcpSession({
 			sessionId: newSessionId,
 			cwd: params.cwd,
-			mcpServers: params.mcpServers ?? [],
+			mcpServers: forkMcpServers,
 			piSession,
+			mcpManager,
 			conn: this.conn,
 			supportsTerminalOutput: this.clientCapabilities.terminalOutput,
 		});
@@ -761,6 +783,27 @@ export class PiAcpAgent implements ACPAgent {
 			modes,
 			models,
 		};
+	}
+
+	private async openMcpRuntime(
+		mcpServers: NewSessionRequest["mcpServers"],
+		cwd: string,
+	): Promise<{ manager: McpSessionManager; tools: ToolDefinition[] }> {
+		let manager: McpSessionManager | undefined;
+		try {
+			const normalized = normalizeMcpServers(mcpServers, cwd);
+			manager = await McpSessionManager.open(
+				normalized,
+				this.mcpInitializeTimeoutMs === undefined
+					? {}
+					: { connection: { initializeTimeoutMs: this.mcpInitializeTimeoutMs } },
+			);
+			return { manager, tools: await buildMcpTools(manager) };
+		} catch (error: unknown) {
+			await manager?.close();
+			const message = error instanceof Error ? error.message : "Invalid MCP server configuration";
+			throw RequestError.invalidParams(message);
+		}
 	}
 
 	async setSessionMode(params: SetSessionModeRequest): Promise<SetSessionModeResponse> {

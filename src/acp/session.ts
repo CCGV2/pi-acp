@@ -283,6 +283,7 @@ export class PiAcpSession {
 	readonly mcpServers: McpServer[];
 	readonly piSession: AgentSession;
 	readonly supportsTerminalOutput: boolean;
+	readonly mcpFingerprint: string;
 
 	private readonly conn: AgentSideConnection;
 	private readonly mcpManager: McpSessionManager | undefined;
@@ -313,6 +314,7 @@ export class PiAcpSession {
 		this.mcpServers = opts.mcpServers;
 		this.piSession = opts.piSession;
 		this.mcpManager = opts.mcpManager;
+		this.mcpFingerprint = opts.mcpManager?.fingerprint ?? "";
 		this.conn = opts.conn;
 		this.supportsTerminalOutput = opts.supportsTerminalOutput ?? false;
 		this.unsubscribe = this.piSession.subscribe((ev: AgentSessionEvent) => this.handlePiEvent(ev));
