@@ -2,8 +2,8 @@ import type { AgentToolResult } from "@earendil-works/pi-agent-core";
 import type { ImageContent as PiImageContent, TextContent } from "@earendil-works/pi-ai";
 import { defineTool, type ToolDefinition } from "@earendil-works/pi-coding-agent";
 import { type CallToolResult, CallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
+import type { McpConnection } from "@pi-acp/mcp/connection";
 import type { McpSessionManager } from "@pi-acp/mcp/session-manager";
-import type { McpStdioConnection } from "@pi-acp/mcp/stdio-connection";
 import { Unsafe } from "typebox";
 
 type PiToolContent = TextContent | PiImageContent;
@@ -102,7 +102,7 @@ function errorMessage(content: readonly PiToolContent[]): string {
 }
 
 export async function invokeMcpTool(
-	connection: McpStdioConnection,
+	connection: McpConnection,
 	toolName: string,
 	arguments_: Record<string, unknown>,
 	signal?: AbortSignal,

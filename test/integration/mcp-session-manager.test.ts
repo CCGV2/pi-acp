@@ -79,18 +79,4 @@ describe("McpSessionManager", () => {
 		expect(manager.state).toBe("closed");
 		for (const pid of pids) expect(() => process.kill(pid, 0)).toThrow();
 	});
-
-	test("rejects HTTP until its transport phase is enabled", async () => {
-		await expect(
-			McpSessionManager.open([
-				{
-					kind: "http",
-					originalName: "remote",
-					stableName: "remote",
-					url: "https://example.com/mcp",
-					headers: {},
-				},
-			]),
-		).rejects.toThrow('MCP transport "http" is not implemented');
-	});
 });
