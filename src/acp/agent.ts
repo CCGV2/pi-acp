@@ -40,9 +40,11 @@ import type { AgentMessage } from "@earendil-works/pi-agent-core";
 import type { AssistantMessage, ToolResultMessage, UserMessage } from "@earendil-works/pi-ai";
 import {
 	type AgentSession,
+	type CreateAgentSessionOptions,
 	type CreateAgentSessionResult,
 	createAgentSession,
 	SessionManager as PiSessionManager,
+	type ToolDefinition,
 } from "@earendil-works/pi-coding-agent";
 import { buildAuthMethods } from "@pi-acp/acp/auth";
 import { detectAuthError } from "@pi-acp/acp/auth-required";
@@ -64,10 +66,19 @@ import {
 import { extractUserMessageText } from "@pi-acp/acp/translate/pi-messages";
 import { acpPromptToPiMessage } from "@pi-acp/acp/translate/prompt";
 import { formatToolContent } from "@pi-acp/acp/translate/tool-content";
+import { normalizeMcpServers } from "@pi-acp/mcp/normalize";
+import { McpSessionManager } from "@pi-acp/mcp/session-manager";
+import { buildMcpTools } from "@pi-acp/mcp/tool-adapter";
 
 import pkgJson from "../../package.json" with { type: "json" };
 
 type ThinkingLevel = "off" | "minimal" | "low" | "medium" | "high" | "xhigh";
+type CreatePiSession = (options?: CreateAgentSessionOptions) => Promise<CreateAgentSessionResult>;
+
+export type PiAcpAgentConfig = {
+	createAgentSession?: CreatePiSession;
+	mcpInitializeTimeoutMs?: number;
+};
 
 export function assertMcpServersSupported(mcpServers: readonly unknown[] | undefined): void {
 	if (mcpServers !== undefined && mcpServers.length > 0) {
@@ -155,6 +166,8 @@ function truncateSessionTitle(text: string): string | null {
 export class PiAcpAgent implements ACPAgent {
 	private readonly conn: AgentSideConnection;
 	private readonly sessions = new SessionManager();
+	private readonly createPiSession: CreatePiSession;
+	private readonly mcpInitializeTimeoutMs: number | undefined;
 	/** Cache of sessionId → file path, populated by listSessions and newSession. */
 	private readonly sessionPaths = new Map<string, string>();
 	/** Parsed client capability flags from initialize(). */
@@ -168,9 +181,10 @@ export class PiAcpAgent implements ACPAgent {
 		this.sessions.disposeAll();
 	}
 
-	constructor(conn: AgentSideConnection, _config?: unknown) {
+	constructor(conn: AgentSideConnection, config: PiAcpAgentConfig = {}) {
 		this.conn = conn;
-		void _config;
+		this.createPiSession = config.createAgentSession ?? createAgentSession;
+		this.mcpInitializeTimeoutMs = config.mcpInitializeTimeoutMs;
 	}
 
 	async initialize(params: InitializeRequest): Promise<InitializeResponse> {
@@ -208,15 +222,32 @@ export class PiAcpAgent implements ACPAgent {
 	}
 
 	async newSession(params: NewSessionRequest) {
-		assertMcpServersSupported(params.mcpServers);
 		if (!isAbsolute(params.cwd)) {
 			throw RequestError.invalidParams(`cwd must be an absolute path: ${params.cwd}`);
 		}
 
+		let mcpManager: McpSessionManager | undefined;
+		let customTools: ToolDefinition[];
+		try {
+			const normalized = normalizeMcpServers(params.mcpServers, params.cwd);
+			mcpManager = await McpSessionManager.open(
+				normalized,
+				this.mcpInitializeTimeoutMs === undefined
+					? {}
+					: { connection: { initializeTimeoutMs: this.mcpInitializeTimeoutMs } },
+			);
+			customTools = await buildMcpTools(mcpManager);
+		} catch (e: unknown) {
+			await mcpManager?.close();
+			const msg = e instanceof Error ? e.message : "Invalid MCP server configuration";
+			throw RequestError.invalidParams(msg);
+		}
+
 		let result: CreateAgentSessionResult;
 		try {
-			result = await createAgentSession({ cwd: params.cwd });
+			result = await this.createPiSession({ cwd: params.cwd, customTools });
 		} catch (e: unknown) {
+			await mcpManager.close();
 			const authErr = detectAuthError(e);
 			if (authErr !== null) throw authErr;
 			const msg = e instanceof Error ? e.message : String(e);
@@ -245,6 +276,7 @@ export class PiAcpAgent implements ACPAgent {
 			cwd: params.cwd,
 			mcpServers: params.mcpServers,
 			piSession,
+			mcpManager,
 			conn: this.conn,
 			supportsTerminalOutput: this.clientCapabilities.terminalOutput,
 		});

@@ -108,7 +108,10 @@ export class FakeAgentSession {
 	}
 
 	get sessionManager() {
-		return { getSessionId: () => "test-session-id" };
+		return {
+			getSessionId: () => "test-session-id",
+			getSessionFile: () => undefined,
+		};
 	}
 
 	get resourceLoader() {

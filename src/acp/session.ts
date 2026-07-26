@@ -15,6 +15,7 @@ import type { AssistantMessageEvent, ToolCall } from "@earendil-works/pi-ai";
 import type { AgentSession, AgentSessionEvent } from "@earendil-works/pi-coding-agent";
 import { formatToolContent, wrapStreamingBashOutput } from "@pi-acp/acp/translate/tool-content";
 import { unreachable } from "@pi-acp/acp/unreachable";
+import type { McpSessionManager } from "@pi-acp/mcp/session-manager";
 import * as z from "zod";
 
 export type StopReason = "end_turn" | "cancelled" | "max_tokens" | "error";
@@ -270,6 +271,7 @@ export interface PiAcpSessionOpts {
 	cwd: string;
 	mcpServers: McpServer[];
 	piSession: AgentSession;
+	mcpManager?: McpSessionManager | undefined;
 	conn: AgentSideConnection;
 	/** Whether the client supports terminal output metadata. */
 	supportsTerminalOutput?: boolean | undefined;
@@ -283,6 +285,7 @@ export class PiAcpSession {
 	readonly supportsTerminalOutput: boolean;
 
 	private readonly conn: AgentSideConnection;
+	private readonly mcpManager: McpSessionManager | undefined;
 
 	private cancelRequested = false;
 	private promptRunning = false;
@@ -309,6 +312,7 @@ export class PiAcpSession {
 		this.cwd = opts.cwd;
 		this.mcpServers = opts.mcpServers;
 		this.piSession = opts.piSession;
+		this.mcpManager = opts.mcpManager;
 		this.conn = opts.conn;
 		this.supportsTerminalOutput = opts.supportsTerminalOutput ?? false;
 		this.unsubscribe = this.piSession.subscribe((ev: AgentSessionEvent) => this.handlePiEvent(ev));
@@ -317,6 +321,7 @@ export class PiAcpSession {
 	dispose(): void {
 		this.unsubscribe?.();
 		this.piSession.dispose();
+		void this.mcpManager?.close();
 	}
 
 	async prompt(message: string, images: unknown[] = []): Promise<StopReason> {
