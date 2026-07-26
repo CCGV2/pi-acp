@@ -107,4 +107,29 @@ describe("session/new MCP integration", () => {
 		const pid = Number.parseInt(readFileSync(pidFile, "utf8"), 10);
 		expect(() => process.kill(pid, 0)).toThrow();
 	});
+
+	test("waits for the MCP child to exit before closeSession returns", async () => {
+		const directory = mkdtempSync(join(tmpdir(), "pi-acp-close-mcp-"));
+		const pidFile = join(directory, "mcp.pid");
+		const agent = new PiAcpAgent(asAgentConn(new FakeAgentSideConnection()), {
+			createAgentSession: async () => resultFrom(new FakeAgentSession()),
+		});
+		agents.push(agent);
+		const response = await agent.newSession({
+			cwd: process.cwd(),
+			mcpServers: [
+				{
+					name: "fixture",
+					command: process.execPath,
+					args: [fixturePath],
+					env: [{ name: "PI_ACP_PID_FILE", value: pidFile }],
+				},
+			],
+		});
+		const pid = Number.parseInt(readFileSync(pidFile, "utf8"), 10);
+
+		await agent.closeSession({ sessionId: response.sessionId });
+
+		expect(() => process.kill(pid, 0)).toThrow();
+	});
 });

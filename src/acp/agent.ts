@@ -540,7 +540,7 @@ export class PiAcpAgent implements ACPAgent {
 			throw RequestError.invalidParams(`cwd must be an absolute path: ${params.cwd}`);
 		}
 
-		this.sessions.close(params.sessionId);
+		await this.sessions.closeAsync(params.sessionId);
 
 		const sessionFile = await this.resolveSessionFile(params.sessionId);
 		if (sessionFile === null) {
@@ -615,7 +615,7 @@ export class PiAcpAgent implements ACPAgent {
 		if (session === undefined) {
 			throw RequestError.invalidParams(`Unknown sessionId: ${params.sessionId}`);
 		}
-		this.sessions.close(params.sessionId);
+		await this.sessions.closeAsync(params.sessionId);
 		return {};
 	}
 

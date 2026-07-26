@@ -230,6 +230,10 @@ export class SessionManager {
 		for (const id of this.sessions.keys()) this.close(id);
 	}
 
+	async disposeAllAsync(): Promise<void> {
+		await Promise.all([...this.sessions.keys()].map((id) => this.closeAsync(id)));
+	}
+
 	maybeGet(sessionId: string): PiAcpSession | undefined {
 		return this.sessions.get(sessionId);
 	}
@@ -243,6 +247,13 @@ export class SessionManager {
 			// best-effort
 		}
 		this.sessions.delete(sessionId);
+	}
+
+	async closeAsync(sessionId: string): Promise<void> {
+		const session = this.sessions.get(sessionId);
+		if (session === undefined) return;
+		this.sessions.delete(sessionId);
+		await session.disposeAsync();
 	}
 
 	closeAllExcept(keepSessionId: string): void {
@@ -324,6 +335,12 @@ export class PiAcpSession {
 		this.unsubscribe?.();
 		this.piSession.dispose();
 		void this.mcpManager?.close();
+	}
+
+	async disposeAsync(): Promise<void> {
+		this.unsubscribe?.();
+		this.piSession.dispose();
+		await this.mcpManager?.close();
 	}
 
 	async prompt(message: string, images: unknown[] = []): Promise<StopReason> {
