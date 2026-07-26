@@ -69,6 +69,12 @@ import pkgJson from "../../package.json" with { type: "json" };
 
 type ThinkingLevel = "off" | "minimal" | "low" | "medium" | "high" | "xhigh";
 
+export function assertMcpServersSupported(mcpServers: readonly unknown[] | undefined): void {
+	if (mcpServers !== undefined && mcpServers.length > 0) {
+		throw RequestError.invalidRequest("MCP servers are not supported by this build");
+	}
+}
+
 /** Builtin ACP slash commands handled directly by the adapter. */
 const BUILTIN_COMMANDS: readonly AvailableCommand[] = [
 	{
@@ -202,6 +208,7 @@ export class PiAcpAgent implements ACPAgent {
 	}
 
 	async newSession(params: NewSessionRequest) {
+		assertMcpServersSupported(params.mcpServers);
 		if (!isAbsolute(params.cwd)) {
 			throw RequestError.invalidParams(`cwd must be an absolute path: ${params.cwd}`);
 		}
@@ -500,6 +507,7 @@ export class PiAcpAgent implements ACPAgent {
 	}
 
 	async loadSession(params: LoadSessionRequest): Promise<LoadSessionResponse> {
+		assertMcpServersSupported(params.mcpServers);
 		if (!isAbsolute(params.cwd)) {
 			throw RequestError.invalidParams(`cwd must be an absolute path: ${params.cwd}`);
 		}
@@ -577,6 +585,7 @@ export class PiAcpAgent implements ACPAgent {
 	}
 
 	async resumeSession(params: ResumeSessionRequest): Promise<ResumeSessionResponse> {
+		assertMcpServersSupported(params.mcpServers);
 		if (!isAbsolute(params.cwd)) {
 			throw RequestError.invalidParams(`cwd must be an absolute path: ${params.cwd}`);
 		}
@@ -653,6 +662,7 @@ export class PiAcpAgent implements ACPAgent {
 	}
 
 	async unstable_forkSession(params: ForkSessionRequest): Promise<ForkSessionResponse> {
+		assertMcpServersSupported(params.mcpServers);
 		if (!isAbsolute(params.cwd)) {
 			throw RequestError.invalidParams(`cwd must be an absolute path: ${params.cwd}`);
 		}
