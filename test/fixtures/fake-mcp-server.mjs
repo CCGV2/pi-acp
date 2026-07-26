@@ -1,11 +1,16 @@
 #!/usr/bin/env node
 
+import { writeFileSync } from "node:fs";
 import process from "node:process";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import * as z from "zod";
 
 const mode = process.argv[2] ?? "normal";
+
+if (process.env.PI_ACP_PID_FILE !== undefined) {
+	writeFileSync(process.env.PI_ACP_PID_FILE, String(process.pid));
+}
 
 if (mode === "hang-initialize") {
 	process.stdin.resume();
