@@ -89,12 +89,6 @@ export function assertResumeMcpCompatible(existing: string, requested: string): 
 	}
 }
 
-export function assertMcpServersSupported(mcpServers: readonly unknown[] | undefined): void {
-	if (mcpServers !== undefined && mcpServers.length > 0) {
-		throw RequestError.invalidRequest("MCP servers are not supported by this build");
-	}
-}
-
 /** Builtin ACP slash commands handled directly by the adapter. */
 const BUILTIN_COMMANDS: readonly AvailableCommand[] = [
 	{
@@ -214,7 +208,7 @@ export class PiAcpAgent implements ACPAgent {
 			}),
 			agentCapabilities: {
 				loadSession: true,
-				mcpCapabilities: { http: false, sse: false },
+				mcpCapabilities: { http: true, sse: false },
 				promptCapabilities: {
 					image: true,
 					audio: false,

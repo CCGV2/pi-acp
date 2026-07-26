@@ -1,10 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { AuthenticateRequest } from "@agentclientprotocol/sdk";
-import {
-	assertMcpServersSupported,
-	assertResumeMcpCompatible,
-	PiAcpAgent,
-} from "@pi-acp/acp/agent";
+import { assertResumeMcpCompatible, PiAcpAgent } from "@pi-acp/acp/agent";
 import { asAgentConn, FakeAgentSideConnection } from "../helpers/fakes";
 
 function createAgent() {
@@ -74,6 +70,13 @@ describe("protocol surface: initialize", () => {
 		expect(caps.promptCapabilities?.audio).toBe(false);
 	});
 
+	test("advertises stdio and Streamable HTTP MCP support but not legacy SSE", async () => {
+		const { response } = await initAgent();
+		const capabilities = response.agentCapabilities?.mcpCapabilities;
+		expect(capabilities?.http).toBe(true);
+		expect(capabilities?.sse).toBe(false);
+	});
+
 	test("returns auth methods", async () => {
 		const { response } = await initAgent();
 		expect(response.authMethods).toBeDefined();
@@ -124,24 +127,6 @@ describe("protocol surface: newSession", () => {
 	test("rejects non-absolute cwd", () => {
 		const { agent } = createAgent();
 		expect(agent.newSession({ cwd: "relative/path", mcpServers: [] })).rejects.toThrow();
-	});
-});
-
-describe("protocol surface: MCP baseline guard", () => {
-	test("accepts an empty MCP server list", () => {
-		expect(() => assertMcpServersSupported([])).not.toThrow();
-	});
-
-	test("rejects non-empty MCP input before session creation", () => {
-		try {
-			assertMcpServersSupported([{}]);
-			throw new Error("expected MCP guard to reject");
-		} catch (error) {
-			expect(error).toMatchObject({
-				code: -32600,
-				data: "MCP servers are not supported by this build",
-			});
-		}
 	});
 });
 

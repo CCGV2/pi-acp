@@ -39,6 +39,11 @@ Active development. ACP compliance is improving steadily. Development is centere
   - `closeSession`, `resumeSession` (stable in ACP v0.12.2+)
   - `unstable_forkSession` (preview)
   - Sessions can be resumed in both `pi` CLI and ACP clients
+- Per-session MCP servers
+  - stdio servers with command, arguments, session cwd, and explicit environment overrides
+  - Streamable HTTP servers over HTTPS or loopback HTTP
+  - MCP tools are exposed to pi as namespaced `customTools`
+  - Atomic startup rollback, bounded stderr diagnostics, cancellation, and awaited cleanup
 - Usage and cost tracking
   - `usage_update` emitted after each agent turn with context size and cost
   - `PromptResponse.usage` includes per-turn token counts
@@ -147,7 +152,7 @@ bun run dev          # run from src
 bun run build        # tsdown -> dist/index.mjs
 bun run typecheck    # tsc --noEmit
 bun run lint         # biome + oxlint
-bun test             # 26 tests
+bun test
 ```
 
 Project layout:
@@ -176,9 +181,13 @@ test/
 
 ## Limitations
 
-### MUST-level gaps
+### MCP behavior
 
-- **MCP servers** -- accepted in `session/new` and `session/load` params but not wired through to pi. ACP requires agents to connect to all provided MCP servers. This is the main compliance gap (upstream pi SDK limitation).
+- stdio and Streamable HTTP transports are supported. Legacy SSE and unstable ACP-routed MCP transports are rejected.
+- Remote plaintext HTTP is rejected; `http://` is accepted only for `localhost`, `127.0.0.1`, and `::1`.
+- stdio processes inherit only the MCP SDK safe environment allowlist plus explicit ACP `env` entries.
+- Each ACP session owns its MCP connections. Startup is atomic and `session/close` waits for cleanup.
+- `session/load` and `session/fork` rebuild MCP from the request. `session/resume` reuses a live runtime when MCP is omitted and rejects an explicitly different configuration.
 
 ### SHOULD-level gaps
 

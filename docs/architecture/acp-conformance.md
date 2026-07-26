@@ -67,14 +67,14 @@ These are excluded from this refactor for architectural reasons documented in `P
 | ACP `plan` updates | pi has no equivalent planning surface |
 | `readTextFile` / `writeTextFile` delegation | pi operates on disk directly |
 | `terminal/create` and related methods | pi executes commands locally |
-| Per-session MCP server wiring | pi SDK does not expose this in `createAgentSession()` |
+| Per-session MCP server wiring | Implemented by mapping MCP tools into pi `customTools` |
 | Terminal-style `_meta` extensions | No ACP client currently consumes these |
 
 ## Upstream limitations
 
 These require changes to the pi SDK before they can be implemented:
 
-1. **MCP server wiring**: `createAgentSession()` does not accept per-session `mcpServers`
+1. **Legacy MCP SSE transport**: stdio and Streamable HTTP are implemented; legacy SSE is not advertised
 2. **Permission bridge**: No hook for ACP-style tool permission gates
 3. **Plan surface**: No `TodoWrite`-style planning API
 4. **Client-delegated FS/terminal**: pi's architecture assumes local execution
