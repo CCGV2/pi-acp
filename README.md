@@ -4,6 +4,11 @@ ACP ([Agent Client Protocol](https://agentclientprotocol.com/get-started/introdu
 
 `pi-acp` embeds pi directly via the `@earendil-works/pi-coding-agent` SDK and exposes it as an ACP agent over stdio. Each ACP session owns one in-process `AgentSession`.
 
+> **Fork notice:** This repository is based on
+> [`victor-software-house/pi-acp`](https://github.com/victor-software-house/pi-acp).
+> This fork adds per-session MCP runtime support, including stdio and Streamable HTTP
+> servers, MCP tool discovery, and exposing those tools to pi as `customTools`.
+
 ## Specs and decisions
 
 - [`docs/prd/PRD-001-acp-v013-zed-alignment.md`](docs/prd/PRD-001-acp-v013-zed-alignment.md) — active release PRD (v0.5).
