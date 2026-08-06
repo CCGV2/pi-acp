@@ -1,21 +1,21 @@
 {
-	"name": "@victor-software-house/pi-acp",
+	"name": "@ccgv2/pi-acp",
 	"version": "0.5.0",
 	"description": "ACP adapter for pi coding agent",
 	"license": "MIT",
-	"author": "Victor Software House",
+	"author": "CCGV2",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/victor-software-house/pi-acp.git"
+		"url": "https://github.com/CCGV2/pi-acp.git"
 	},
 	"publishConfig": {
 		"access": "public",
 		"provenance": true
 	},
 	"bugs": {
-		"url": "https://github.com/victor-software-house/pi-acp/issues"
+		"url": "https://github.com/CCGV2/pi-acp/issues"
 	},
-	"homepage": "https://github.com/victor-software-house/pi-acp#readme",
+	"homepage": "https://github.com/CCGV2/pi-acp#readme",
 	"keywords": [
 		"acp",
 		"agent-client-protocol",

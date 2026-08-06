@@ -63,7 +63,6 @@ Active development. ACP compliance is improving steadily. Development is centere
 ## Prerequisites
 
 - Node.js 24+ (hard requirement, matches pi runtime)
-- `pi` installed globally (v0.75.3+): `npm install -g @earendil-works/pi-coding-agent`
 - Configure `pi` for your model providers/API keys
 
 ## Install
@@ -87,7 +86,7 @@ Launch the registry with `zed: acp registry` and select `pi ACP`:
   "pi": {
     "type": "custom",
     "command": "npx",
-    "args": ["-y", "@victor-software-house/pi-acp"],
+    "args": ["-y", "@ccgv2/pi-acp"],
     "env": {}
   }
 }
@@ -96,7 +95,7 @@ Launch the registry with `zed: acp registry` and select `pi ACP`:
 ### Global install
 
 ```bash
-npm install -g @victor-software-house/pi-acp
+npm install -g @ccgv2/pi-acp
 ```
 
 ```json
