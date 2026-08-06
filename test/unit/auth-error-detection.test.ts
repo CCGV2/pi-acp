@@ -1,5 +1,5 @@
-import { describe, expect, test } from "bun:test";
 import { detectAuthError } from "@pi-acp/acp/auth-required";
+import { describe, expect, test } from "vitest";
 
 describe("detectAuthError", () => {
 	test("detects 'api key' error", () => {

@@ -1,6 +1,6 @@
-import { describe, expect, test } from "bun:test";
 import type { AgentSession } from "@earendil-works/pi-coding-agent";
 import { PiAcpSession, SessionManager } from "@pi-acp/acp/session";
+import { describe, expect, test } from "vitest";
 import { asAgentConn, FakeAgentSession, FakeAgentSideConnection } from "../helpers/fakes";
 
 function createTestSession(id: string, cwd = process.cwd()) {

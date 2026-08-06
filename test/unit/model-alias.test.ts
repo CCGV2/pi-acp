@@ -1,5 +1,5 @@
-import { describe, expect, test } from "bun:test";
 import { resolveModelPreference } from "@pi-acp/acp/model-alias";
+import { describe, expect, test } from "vitest";
 
 const models = [
 	{ provider: "anthropic", id: "claude-sonnet-4-20250514", name: "Claude Sonnet 4" },

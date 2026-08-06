@@ -1,7 +1,7 @@
-import { describe, expect, test } from "bun:test";
 import type { SessionUpdate } from "@agentclientprotocol/sdk";
 import type { AgentSession } from "@earendil-works/pi-coding-agent";
 import { PiAcpSession } from "@pi-acp/acp/session";
+import { describe, expect, test } from "vitest";
 import { asAgentConn, FakeAgentSession, FakeAgentSideConnection } from "../helpers/fakes";
 
 const tick = () => new Promise((r) => setTimeout(r, 0));

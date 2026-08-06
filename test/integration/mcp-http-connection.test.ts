@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, test } from "bun:test";
 import { createServer, type Server } from "node:http";
 import { McpSessionManager } from "@pi-acp/mcp/session-manager";
 import { buildMcpTools, invokeMcpTool } from "@pi-acp/mcp/tool-adapter";
+import { afterEach, describe, expect, test } from "vitest";
 
 const servers: Server[] = [];
 const managers: McpSessionManager[] = [];

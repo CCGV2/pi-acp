@@ -113,8 +113,8 @@ npm install -g @victor-software-house/pi-acp
 ### From source
 
 ```bash
-bun install
-bun run build
+npm install
+npm run build
 ```
 
 ```json
@@ -152,12 +152,12 @@ Zed shows an Authenticate banner that launches this automatically.
 ## Development
 
 ```bash
-bun install
-bun run dev          # run from src
-bun run build        # tsdown -> dist/index.mjs
-bun run typecheck    # tsc --noEmit
-bun run lint         # biome + oxlint
-bun test
+npm install
+npm run dev          # run from src
+npm run build        # tsdown -> dist/index.mjs
+npm run typecheck    # tsc --noEmit
+npm run lint         # biome + oxlint
+npm test             # Vitest
 ```
 
 Project layout:

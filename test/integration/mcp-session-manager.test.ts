@@ -1,10 +1,10 @@
-import { afterEach, describe, expect, test } from "bun:test";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { McpSessionManager } from "@pi-acp/mcp/session-manager";
 import type { NormalizedStdioMcpServer } from "@pi-acp/mcp/types";
+import { afterEach, describe, expect, test } from "vitest";
 
 const fixturePath = fileURLToPath(new URL("../fixtures/fake-mcp-server.mjs", import.meta.url));
 const managers: McpSessionManager[] = [];

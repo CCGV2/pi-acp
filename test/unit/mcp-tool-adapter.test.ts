@@ -1,10 +1,10 @@
-import { describe, expect, test } from "bun:test";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import {
 	mcpResultToPiContent,
 	mcpToolName,
 	validateUniqueMcpToolNames,
 } from "@pi-acp/mcp/tool-adapter";
+import { describe, expect, test } from "vitest";
 
 describe("MCP tool naming", () => {
 	test("creates provider-safe deterministic names", () => {

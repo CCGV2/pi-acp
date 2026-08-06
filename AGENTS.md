@@ -31,16 +31,16 @@ Both `modes` and `models` are also returned for backward compatibility.
 
 ## Dev workflow
 
-- Install deps: `bun install`
-- Run in dev: `bun run dev`
-- Build: `bun run build`
-- Typecheck: `bun run typecheck`
-- Lint: `bun run lint` (biome + oxlint)
-- Test: `bun test`
+- Install deps: `npm install`
+- Run in dev: `npm run dev`
+- Build: `npm run build`
+- Typecheck: `npm run typecheck`
+- Lint: `npm run lint` (biome + oxlint)
+- Test: `npm test`
 
 ## Coding guidelines
 
-- Toolchain: Bun (dev/test), tsdown (npm build), Biome (format/lint), oxlint (type-aware lint + zod plugin)
+- Toolchain: Node.js 24 + npm, tsx (dev), Vitest (test), tsdown (build), Biome/oxlint (lint)
 - Tabs, double quotes, semicolons, `import type` enforced, `node:` protocol
 - No `any`, no unsafe type assertions (`as Type`), no `@ts-ignore`
 - Zod for parsing untrusted/external data (JSON files, pi SDK `any` boundaries)

@@ -1,4 +1,3 @@
-import { afterEach, describe, expect, test } from "bun:test";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -8,6 +7,7 @@ import type {
 	CreateAgentSessionResult,
 } from "@earendil-works/pi-coding-agent";
 import { PiAcpAgent } from "@pi-acp/acp/agent";
+import { afterEach, describe, expect, test } from "vitest";
 import { asAgentConn, FakeAgentSession, FakeAgentSideConnection } from "../helpers/fakes";
 
 const fixturePath = fileURLToPath(new URL("../fixtures/fake-mcp-server.mjs", import.meta.url));
@@ -103,7 +103,7 @@ describe("session/new MCP integration", () => {
 				],
 			}),
 		).rejects.toThrow("pi creation failed");
-		await Bun.sleep(20);
+		await new Promise((resolve) => setTimeout(resolve, 20));
 		const pid = Number.parseInt(readFileSync(pidFile, "utf8"), 10);
 		expect(() => process.kill(pid, 0)).toThrow();
 	});

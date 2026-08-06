@@ -1,6 +1,6 @@
-import { describe, expect, test } from "bun:test";
 import type { McpServer } from "@agentclientprotocol/sdk";
 import { normalizeMcpServers } from "@pi-acp/mcp/normalize";
+import { describe, expect, test } from "vitest";
 
 const cwd = process.cwd();
 

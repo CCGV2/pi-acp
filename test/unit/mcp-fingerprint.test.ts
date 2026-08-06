@@ -1,6 +1,6 @@
-import { describe, expect, test } from "bun:test";
 import { fingerprintMcpServers } from "@pi-acp/mcp/fingerprint";
 import { normalizeMcpServers } from "@pi-acp/mcp/normalize";
+import { describe, expect, test } from "vitest";
 
 const cwd = process.cwd();
 

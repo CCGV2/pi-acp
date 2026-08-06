@@ -1,5 +1,5 @@
-import { describe, expect, test } from "bun:test";
 import { buildToolTitle, toToolKind } from "@pi-acp/acp/session";
+import { describe, expect, test } from "vitest";
 
 describe("buildToolTitle", () => {
 	test("read with path", () => {

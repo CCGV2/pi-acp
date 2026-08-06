@@ -1,4 +1,3 @@
-import { describe, expect, test } from "bun:test";
 import {
 	extractBashOutput,
 	extractContentBlocks,
@@ -7,6 +6,7 @@ import {
 	markdownEscape,
 	wrapStreamingBashOutput,
 } from "@pi-acp/acp/translate/tool-content";
+import { describe, expect, test } from "vitest";
 
 type R = Record<string, unknown>;
 

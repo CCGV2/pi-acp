@@ -1,6 +1,6 @@
-import { describe, expect, test } from "bun:test";
 import type { AuthenticateRequest } from "@agentclientprotocol/sdk";
 import { assertResumeMcpCompatible, PiAcpAgent } from "@pi-acp/acp/agent";
+import { describe, expect, test } from "vitest";
 import { asAgentConn, FakeAgentSideConnection } from "../helpers/fakes";
 
 function createAgent() {
@@ -124,32 +124,34 @@ describe("protocol surface: authenticate", () => {
 });
 
 describe("protocol surface: newSession", () => {
-	test("rejects non-absolute cwd", () => {
+	test("rejects non-absolute cwd", async () => {
 		const { agent } = createAgent();
-		expect(agent.newSession({ cwd: "relative/path", mcpServers: [] })).rejects.toThrow();
+		await expect(agent.newSession({ cwd: "relative/path", mcpServers: [] })).rejects.toThrow();
 	});
 });
 
 describe("protocol surface: loadSession", () => {
-	test("rejects non-absolute cwd", () => {
+	test("rejects non-absolute cwd", async () => {
 		const { agent } = createAgent();
-		expect(
+		await expect(
 			agent.loadSession({ sessionId: "test", cwd: "relative/path", mcpServers: [] }),
 		).rejects.toThrow();
 	});
 });
 
 describe("protocol surface: closeSession", () => {
-	test("rejects unknown session", () => {
+	test("rejects unknown session", async () => {
 		const { agent } = createAgent();
-		expect(agent.closeSession({ sessionId: "nonexistent" })).rejects.toThrow();
+		await expect(agent.closeSession({ sessionId: "nonexistent" })).rejects.toThrow();
 	});
 });
 
 describe("protocol surface: resumeSession", () => {
-	test("rejects non-absolute cwd", () => {
+	test("rejects non-absolute cwd", async () => {
 		const { agent } = createAgent();
-		expect(agent.resumeSession({ sessionId: "test", cwd: "relative/path" })).rejects.toThrow();
+		await expect(
+			agent.resumeSession({ sessionId: "test", cwd: "relative/path" }),
+		).rejects.toThrow();
 	});
 
 	test("requires explicitly supplied MCP config to match a live session", () => {
@@ -164,9 +166,9 @@ describe("protocol surface: resumeSession", () => {
 });
 
 describe("protocol surface: unstable_forkSession", () => {
-	test("rejects non-absolute cwd", () => {
+	test("rejects non-absolute cwd", async () => {
 		const { agent } = createAgent();
-		expect(
+		await expect(
 			agent.unstable_forkSession({ sessionId: "test", cwd: "relative/path", mcpServers: [] }),
 		).rejects.toThrow();
 	});
@@ -177,16 +179,18 @@ describe("protocol surface: unstable_forkSession", () => {
 // ---------------------------------------------------------------------------
 
 describe("protocol surface: setSessionMode", () => {
-	test("rejects unknown session", () => {
+	test("rejects unknown session", async () => {
 		const { agent } = createAgent();
-		expect(agent.setSessionMode({ sessionId: "nonexistent", modeId: "high" })).rejects.toThrow();
+		await expect(
+			agent.setSessionMode({ sessionId: "nonexistent", modeId: "high" }),
+		).rejects.toThrow();
 	});
 });
 
 describe("protocol surface: setSessionConfigOption", () => {
-	test("rejects unknown session", () => {
+	test("rejects unknown session", async () => {
 		const { agent } = createAgent();
-		expect(
+		await expect(
 			agent.setSessionConfigOption({
 				sessionId: "nonexistent",
 				configId: "model",
@@ -197,9 +201,9 @@ describe("protocol surface: setSessionConfigOption", () => {
 });
 
 describe("protocol surface: unstable_setSessionModel", () => {
-	test("rejects unknown session", () => {
+	test("rejects unknown session", async () => {
 		const { agent } = createAgent();
-		expect(
+		await expect(
 			agent.unstable_setSessionModel({ sessionId: "nonexistent", modelId: "test/model" }),
 		).rejects.toThrow();
 	});

@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, test } from "bun:test";
 import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { afterEach, describe, expect, test } from "vitest";
 
 const fixturePath = fileURLToPath(new URL("../fixtures/fake-mcp-server.mjs", import.meta.url));
 const openTransports: StdioClientTransport[] = [];

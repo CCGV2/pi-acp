@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 
 // Re-implement the truncateSessionTitle logic for unit testing since it's
 // a module-private function. The real implementation is validated indirectly

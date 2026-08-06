@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, test } from "bun:test";
 import { fileURLToPath } from "node:url";
 import { McpStdioConnection } from "@pi-acp/mcp/stdio-connection";
 import type { NormalizedStdioMcpServer } from "@pi-acp/mcp/types";
+import { afterEach, describe, expect, test } from "vitest";
 import * as z from "zod";
 
 const fixturePath = fileURLToPath(new URL("../fixtures/fake-mcp-server.mjs", import.meta.url));
@@ -61,7 +61,7 @@ describe("McpStdioConnection", () => {
 	test("captures bounded stderr without mixing it into protocol stdout", async () => {
 		const connection = await McpStdioConnection.open(server("stderr"));
 		connections.push(connection);
-		await Bun.sleep(20);
+		await new Promise((resolve) => setTimeout(resolve, 20));
 
 		expect(connection.stderr).toContain("fake MCP diagnostic");
 		expect((await connection.client.listTools()).tools.length).toBeGreaterThan(0);

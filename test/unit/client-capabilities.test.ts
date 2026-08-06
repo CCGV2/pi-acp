@@ -1,5 +1,5 @@
-import { describe, expect, test } from "bun:test";
 import { parseClientCapabilities } from "@pi-acp/acp/client-capabilities";
+import { describe, expect, test } from "vitest";
 
 describe("parseClientCapabilities", () => {
 	test("returns all false for undefined", () => {
