@@ -1,6 +1,5 @@
 import { platform } from "node:os";
 import { AgentSideConnection, ndJsonStream } from "@agentclientprotocol/sdk";
-import { PiAcpAgent } from "@pi-acp/acp/agent";
 
 // ACP transports JSON-RPC NDJSON over stdout. Any stray byte on stdout
 // poisons the protocol stream. Redirect console.{log,info,warn,debug} to
@@ -35,6 +34,12 @@ if (process.argv.includes("--terminal-login")) {
 
 	process.exit(typeof res.status === "number" ? res.status : 1);
 }
+
+// Import only after stdout protection is installed, including SDK initialization.
+const { PiAcpAgent } = await import("@pi-acp/acp/agent").catch((error: unknown) => {
+	process.stderr.write(`pi-acp: ${error instanceof Error ? error.message : String(error)}\n`);
+	process.exit(1);
+});
 
 const input = new WritableStream<Uint8Array>({
 	write(chunk) {

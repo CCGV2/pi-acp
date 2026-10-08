@@ -121,11 +121,61 @@ npm run build
   "pi": {
     "type": "custom",
     "command": "node",
-    "args": ["/path/to/pi-acp/dist/index.js"],
+    "args": ["/path/to/pi-acp/dist/index.mjs"],
     "env": {}
   }
 }
 ```
+
+### External Pi SDK (independent harness and adapter upgrades)
+
+By default, pi-acp loads its installed `@earendil-works/pi-coding-agent` dependency.
+Set `PI_ACP_SDK_ROOT` to the **absolute package directory** of another installed
+`@earendil-works/pi-coding-agent` to select that SDK instead. The directory must
+contain its `package.json`, built SDK entry, and have its runtime dependencies
+installed. Do not point it at a prefix, `node_modules`, or the `pi` executable.
+Symlinked package directories are supported and resolved to their real paths.
+
+For example, paxd can maintain separate installation prefixes:
+
+```bash
+npm install --prefix /opt/pax/pi-harness @earendil-works/pi-coding-agent@0.75.3
+npm install --prefix /opt/pax/pi-adapter @ccgv2/pi-acp
+
+PI_ACP_SDK_ROOT=/opt/pax/pi-harness/node_modules/@earendil-works/pi-coding-agent \
+  node /opt/pax/pi-adapter/node_modules/@ccgv2/pi-acp/dist/index.mjs
+```
+
+When spawning the adapter, paxd should pass that variable in the child process
+environment and use stdin/stdout for ACP. Upgrade either installation separately,
+then restart the adapter process to select the updated SDK. This is still an
+in-process `AgentSession`; session operations do not invoke the pi CLI.
+The SDK's dependency graph (including `pi-agent-core` and `pi-ai`) resolves from
+the selected installation, with no runtime Pi imports from the adapter's SDK.
+
+An explicitly empty value, relative path, invalid package, failed import, or
+missing required SDK API produces an error on stderr and exits with status 1
+before accepting ACP requests. There is **no fallback** to the adapter dependency.
+Startup validates the callable API used by this adapter; an external SDK must
+also preserve its signatures and session/event semantics. API shape validation
+cannot guarantee compatibility with arbitrary future behavioral changes.
+
+`initialize` keeps the adapter version in `agentInfo.version` and reports the
+selected SDK's actual installed `package.json` version separately:
+
+```json
+{
+  "agentInfo": { "name": "@ccgv2/pi-acp", "title": "pi ACP adapter", "version": "0.6.0" },
+  "_meta": { "pax": { "runtime": { "name": "pi", "version": "0.75.3" } } }
+}
+```
+
+This excerpt omits the other initialize fields. The runtime version is not
+inferred from the adapter's dependency range. Startup diagnostics include the
+source, resolved entry path, and SDK version on stderr; stdout carries only ACP.
+`/changelog` also reads from the selected SDK installation.
+`PI_ACP_PI_COMMAND` remains a separate setting used only for the interactive
+`--terminal-login` authentication command; it does not select the SDK.
 
 ## Built-in commands
 

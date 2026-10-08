@@ -1,6 +1,5 @@
-import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, realpathSync } from "node:fs";
-import { dirname, isAbsolute, join } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { isAbsolute, join } from "node:path";
 import {
 	type Agent as ACPAgent,
 	type AgentSideConnection,
@@ -38,13 +37,11 @@ import {
 } from "@agentclientprotocol/sdk";
 import type { AgentMessage } from "@earendil-works/pi-agent-core";
 import type { AssistantMessage, ToolResultMessage, UserMessage } from "@earendil-works/pi-ai";
-import {
-	type AgentSession,
-	type CreateAgentSessionOptions,
-	type CreateAgentSessionResult,
-	createAgentSession,
-	SessionManager as PiSessionManager,
-	type ToolDefinition,
+import type {
+	AgentSession,
+	CreateAgentSessionOptions,
+	CreateAgentSessionResult,
+	ToolDefinition,
 } from "@earendil-works/pi-coding-agent";
 import { buildAuthMethods } from "@pi-acp/acp/auth";
 import { detectAuthError } from "@pi-acp/acp/auth-required";
@@ -70,6 +67,8 @@ import { fingerprintMcpServers } from "@pi-acp/mcp/fingerprint";
 import { normalizeMcpServers } from "@pi-acp/mcp/normalize";
 import { McpSessionManager } from "@pi-acp/mcp/session-manager";
 import { buildMcpTools } from "@pi-acp/mcp/tool-adapter";
+
+import { createAgentSession, SessionManager as PiSessionManager, piRuntime } from "@pi-acp/pi/sdk";
 
 import pkgJson from "../../package.json" with { type: "json" };
 
@@ -203,6 +202,7 @@ export class PiAcpAgent implements ACPAgent {
 				title: "pi ACP adapter",
 				version: pkgJson.version,
 			},
+			_meta: { pax: { runtime: piRuntime.info } },
 			authMethods: buildAuthMethods({
 				supportsTerminalAuthMeta: this.clientCapabilities.terminalAuth,
 			}),
@@ -1261,28 +1261,6 @@ function buildCommandList(
 }
 
 function findChangelog(): string | null {
-	try {
-		const whichCmd = process.platform === "win32" ? "where" : "which";
-		const which = spawnSync(whichCmd, ["pi"], { encoding: "utf-8" });
-		const piPath = String(which.stdout ?? "")
-			.split(/\r?\n/)[0]
-			?.trim();
-		if (piPath !== undefined && piPath !== "") {
-			const resolved = realpathSync(piPath);
-			const pkgRoot = dirname(dirname(resolved));
-			const p = join(pkgRoot, "CHANGELOG.md");
-			if (existsSync(p)) return p;
-		}
-	} catch {}
-
-	try {
-		const npmRoot = spawnSync("npm", ["root", "-g"], { encoding: "utf-8" });
-		const root = String(npmRoot.stdout ?? "").trim();
-		if (root) {
-			const p = join(root, "@mariozechner", "pi-coding-agent", "CHANGELOG.md");
-			if (existsSync(p)) return p;
-		}
-	} catch {}
-
-	return null;
+	const path = join(piRuntime.root, "CHANGELOG.md");
+	return existsSync(path) ? path : null;
 }

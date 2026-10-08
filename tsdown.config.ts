@@ -8,6 +8,8 @@ export default defineConfig({
 	sourcemap: true,
 	clean: true,
 	dts: false,
+	// Pi must remain a native Node module graph belonging to the selected install.
+	deps: { neverBundle: [/^@earendil-works\/pi-/] },
 	banner: {
 		js: "#!/usr/bin/env node",
 	},
