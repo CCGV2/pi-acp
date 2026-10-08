@@ -165,7 +165,7 @@ selected SDK's actual installed `package.json` version separately:
 
 ```json
 {
-  "agentInfo": { "name": "@ccgv2/pi-acp", "title": "pi ACP adapter", "version": "0.5.0" },
+  "agentInfo": { "name": "@ccgv2/pi-acp", "title": "pi ACP adapter", "version": "0.6.0" },
   "_meta": { "pax": { "runtime": { "name": "pi", "version": "0.75.3" } } }
 }
 ```

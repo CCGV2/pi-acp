@@ -1,6 +1,6 @@
 {
 	"name": "@ccgv2/pi-acp",
-	"version": "0.5.0",
+	"version": "0.6.0",
 	"description": "ACP adapter for pi coding agent",
 	"license": "MIT",
 	"author": "CCGV2",
@@ -49,13 +49,15 @@
 	},
 	"dependencies": {
 		"@agentclientprotocol/sdk": "^0.22.1",
-		"@earendil-works/pi-coding-agent": "^0.75.3",
+		"@earendil-works/pi-agent-core": "0.75.3",
+		"@earendil-works/pi-ai": "0.75.3",
+		"@earendil-works/pi-coding-agent": "0.75.3",
 		"@modelcontextprotocol/sdk": "1.29.0",
 		"typebox": "^1.1.38",
 		"zod": "^4.3.6"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.8",
+		"@biomejs/biome": "2.4.15",
 		"@commitlint/cli": "^20.5.0",
 		"@commitlint/config-conventional": "^20.5.0",
 		"@limegrass/eslint-plugin-import-alias": "^1.6.1",
@@ -67,7 +69,7 @@
 		"eslint-plugin-zod": "^3.5.0",
 		"lefthook": "^2.1.4",
 		"oxlint": "^1.56.0",
-		"oxlint-tsgolint": "^0.22.1",
+		"oxlint-tsgolint": "^7.0.2001",
 		"semantic-release": "25",
 		"tsdown": "^0.21.4",
 		"tsx": "^4.20.3",

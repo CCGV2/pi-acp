@@ -1,3 +1,22 @@
+# [0.6.0](https://github.com/CCGV2/pi-acp/compare/v0.5.0...v0.6.0) (2026-09-29)
+
+
+### Bug Fixes
+
+* pin pi dependencies and align lint tooling ([1fed908](https://github.com/CCGV2/pi-acp/commit/1fed908c824ded1f7da2beb16284ba3efb415b85))
+
+
+### Features
+
+* **mcp:** adapt server tools for pi ([84ef37f](https://github.com/CCGV2/pi-acp/commit/84ef37fdeffb8325142a3b4e1cd2cfc521d9131a))
+* **mcp:** add atomic session manager ([e5c2596](https://github.com/CCGV2/pi-acp/commit/e5c259687b8bdca2979b375101add0f8abaa05c2))
+* **mcp:** await session cleanup ([ec22827](https://github.com/CCGV2/pi-acp/commit/ec228273a04a2078bcb16016ab043b13a2412f13))
+* **mcp:** integrate new sessions ([aa98aee](https://github.com/CCGV2/pi-acp/commit/aa98aee1971b92be9cbb9eb64fe4ce7006181b18))
+* **mcp:** manage stdio connections ([b15f29f](https://github.com/CCGV2/pi-acp/commit/b15f29f6d535a448d9c6956c7198a63a1032887f))
+* **mcp:** normalize server configuration ([21eb448](https://github.com/CCGV2/pi-acp/commit/21eb448cdb210ca38522ab49206a48f17eb0f76b))
+* **mcp:** restore recovery paths ([6579fa0](https://github.com/CCGV2/pi-acp/commit/6579fa0bab5a5591d824c896809226939749210f))
+* **mcp:** support streamable http ([c5f9feb](https://github.com/CCGV2/pi-acp/commit/c5f9febb63c53ccab5f925fd3fab135d9758c4c1))
+
 # [0.5.0](https://github.com/victor-software-house/pi-acp/compare/v0.4.0...v0.5.0) (2026-05-19)
 
 
