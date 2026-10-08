@@ -1,3 +1,10 @@
+# [0.7.0](https://github.com/CCGV2/pi-acp/compare/v0.6.0...v0.7.0) (2026-10-08)
+
+
+### Features
+
+* support externally installed Pi SDK ([c53f6f5](https://github.com/CCGV2/pi-acp/commit/c53f6f5ca42bcb3d0830d5be7111576ce535c0f5))
+
 # [0.6.0](https://github.com/CCGV2/pi-acp/compare/v0.5.0...v0.6.0) (2026-09-29)
 
 
