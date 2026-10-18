@@ -68,6 +68,7 @@ import { normalizeMcpServers } from "@pi-acp/mcp/normalize";
 import { McpSessionManager } from "@pi-acp/mcp/session-manager";
 import { buildMcpTools } from "@pi-acp/mcp/tool-adapter";
 
+import { getSessionModels } from "@pi-acp/pi/models";
 import { createAgentSession, SessionManager as PiSessionManager, piRuntime } from "@pi-acp/pi/sdk";
 
 import pkgJson from "../../package.json" with { type: "json" };
@@ -247,7 +248,7 @@ export class PiAcpAgent implements ACPAgent {
 
 		const piSession = result.session;
 
-		const availableModels = piSession.modelRegistry.getAvailable();
+		const availableModels = getSessionModels(piSession);
 		if (availableModels.length === 0) {
 			piSession.dispose();
 			throw RequestError.authRequired(
@@ -823,7 +824,7 @@ export class PiAcpAgent implements ACPAgent {
 		params: SetSessionModelRequest,
 	): Promise<SetSessionModelResponse | void> {
 		const session = this.sessions.get(params.sessionId);
-		const available = session.piSession.modelRegistry.getAvailable();
+		const available = getSessionModels(session.piSession);
 
 		const resolved = resolveModelPreference(available, params.modelId);
 		if (resolved === null) {
@@ -847,7 +848,7 @@ export class PiAcpAgent implements ACPAgent {
 		const value = String(params.value);
 
 		if (configId === "model") {
-			const available = session.piSession.modelRegistry.getAvailable();
+			const available = getSessionModels(session.piSession);
 			const resolved = resolveModelPreference(available, value);
 			if (resolved === null) {
 				throw RequestError.invalidParams(`Unknown model: ${value}`);
@@ -1174,7 +1175,7 @@ function buildThinkingModes(piSession: AgentSession): {
 }
 
 function buildModelState(piSession: AgentSession): SessionModelState {
-	const available = piSession.modelRegistry.getAvailable();
+	const available = getSessionModels(piSession);
 	const current = piSession.model;
 
 	const availableModels: ModelInfo[] = available.map((m) => ({
