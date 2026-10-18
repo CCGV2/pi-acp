@@ -1,3 +1,10 @@
+## [0.7.1](https://github.com/CCGV2/pi-acp/compare/v0.7.0...v0.7.1) (2026-10-18)
+
+
+### Bug Fixes
+
+* support Pi 1.x model runtime snapshots ([9f3c316](https://github.com/CCGV2/pi-acp/commit/9f3c31624d7d09b45121ca5bc302627aff45b676))
+
 # [0.7.0](https://github.com/CCGV2/pi-acp/compare/v0.6.0...v0.7.0) (2026-10-08)
 
 
